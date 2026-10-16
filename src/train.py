@@ -100,8 +100,22 @@ def train_model(config):
         run_id = mlflow.active_run().info.run_id
         print(f"MLFlow Run ID: {run_id}")
 
-        metrics = evaluate_model(model, X_test_scaled, y_test)
+    return model, X_test_scaled, y_test, run_id
 
+def main():
+    """
+    Main function to execute the training pipeline.
+    """
+    try:
+        model, X_test_scaled, y_test, run_id = train_model(config)
+        print("Model training completed successfully.")
+    except Exception as e:
+        print(f"Error during model training: {e}")
+        sys.exit(1)
+
+    with mlflow.start_run(run_id=run_id):
+        metrics = evaluate_model(model, X_test_scaled, y_test)
+        
         if 'accuracy' in config['evaluation']['metrics']:
             accuracy = metrics['accuracy']
             mlflow.log_metric('accuracy', round(accuracy, 4))
@@ -135,4 +149,7 @@ def train_model(config):
             print(f"Model does not meet the AUC ROC threshold of {config['evaluation']['min_auc_roc']}.")
             raise SystemExit(1)
 
-    return model, X_test_scaled, y_test, run_id
+        print("Model evaluation metrics logged successfully.")
+
+if __name__ == "__main__":
+    main()
