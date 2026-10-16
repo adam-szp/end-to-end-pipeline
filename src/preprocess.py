@@ -1,0 +1,99 @@
+import pandas as pd
+import numpy as np
+
+def validate_dataframe(df, required_columns, target_column ) -> bool:
+    """
+    Validate the input DataFrame to ensure it meets the required criteria.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame to validate.
+
+    Returns:
+    bool: True if the DataFrame is valid, False otherwise.
+    """
+    if df.empty:
+        print("The DataFrame is empty.")
+        return False
+
+    if df.isnull().values.any():
+        print("The DataFrame contains missing values.")
+        return False
+
+    if df.duplicated().any():
+        print("The DataFrame contains duplicate rows.")
+        return False
+
+    missing = [col for col in required_columns if col not in df.columns]
+    if missing:
+        print(f"The DataFrame is missing required columns: {missing}")
+        return False
+
+    if target_column not in df.columns:
+        print(f'The target column "{target_column}" is not in the DataFrame')
+        return False
+
+    return True
+
+def clean_dataframe(df, numeric_columns, categorical_columns):
+    """
+    Clean the input DataFrame by handling missing values.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame to clean.
+    numeric_columns (list): List of numeric column names.
+    categorical_columns (list): List of categorical column names.
+
+    Returns:
+    pd.DataFrame: The cleaned DataFrame.
+    """
+
+    for col in numeric_columns:
+        if col in df.columns:
+            df[col].fillna(df[col].mean(), inplace=True)
+
+    for col in categorical_columns:
+        if col in df.columns:
+            df[col].fillna(df[col].mode()[0], inplace=True)
+
+    return df
+
+def encode_categoricals(df, categorical_columns):
+    """
+    Encode categorical columns in the DataFrame using One-hot Encoding.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame containing categorical columns.
+    categorical_columns (list): List of categorical column names to encode.
+
+    Returns:
+    pd.DataFrame: The DataFrame with encoded categorical columns.
+    """
+    df = df.copy()
+    df = pd.get_dummies(df, columns=categorical_columns, drop_first=True, dtype=int)
+
+    return df
+
+def check_data_quality(df, numeric_columns):
+    """
+    Check the quality of the data in the DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame to check.
+    numeric_columns (list): List of numeric column names.
+
+    Returns:
+    dict: A dictionary containing data quality metrics.
+    """
+    report = {
+        'total_rows': len(df),
+        'total_nulls': int(df.isnull().sum().sum()),
+        'null_percentage': round(df.isnull().sum().sum()/ (len(df) * len(df.columns)) * 100, 2),
+        'total_duplicates': int(df.duplicated().sum())
+    }
+
+    for col in numeric_columns:
+        if col in df.columns:
+            report[f"{col}_min"] = float(df[col].min())
+            report[f"{col}_max"] = float(df[col].max())
+            
+    return report
