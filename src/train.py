@@ -1,18 +1,16 @@
 import pandas as pd
-import numpy as np
 import mlflow
 import mlflow.sklearn
 import sys
 import json
 import os
-import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from utils import load_config, load_hash
 from preprocess import validate_dataframe, clean_dataframe, encode_categoricals, check_data_quality
+from evaluate import evaluate_model
 
 config = load_config()
 
@@ -101,6 +99,40 @@ def train_model(config):
 
         run_id = mlflow.active_run().info.run_id
         print(f"MLFlow Run ID: {run_id}")
-        print('Model training completed and logged to MLflow.')
+
+        metrics = evaluate_model(model, X_test_scaled, y_test)
+
+        if 'accuracy' in config['evaluation']['metrics']:
+            accuracy = metrics['accuracy']
+            mlflow.log_metric('accuracy', round(accuracy, 4))
+        if 'precision' in config['evaluation']['metrics']:
+            precision = metrics['precision']
+            mlflow.log_metric('precision', round(precision, 4))
+        if 'recall' in config['evaluation']['metrics']:
+            recall = metrics['recall']
+            mlflow.log_metric('recall', round(recall, 4))
+        if 'f1' in config['evaluation']['metrics']:
+            f1 = metrics['f1_score']
+            mlflow.log_metric('f1', round(f1, 4))
+        if 'auc_roc' in config['evaluation']['metrics']:
+            auc_roc = metrics['roc_auc']
+            mlflow.log_metric('auc_roc', round(auc_roc, 4))
+
+
+        if f1 < config['evaluation']['min_f1']:
+            print(f"Model does not meet the F1 score threshold of {config['evaluation']['min_f1']}.")
+            raise SystemExit(1)
+        if precision < config['evaluation']['min_precision']:
+            print(f"Model does not meet the precision threshold of {config['evaluation']['min_precision']}.")
+            raise SystemExit(1)
+        if accuracy < config['evaluation']['min_accuracy']:
+            print(f"Model does not meet the accuracy threshold of {config['evaluation']['min_accuracy']}.")
+            raise SystemExit(1)
+        if recall < config['evaluation']['min_recall']:
+            print(f"Model does not meet the recall threshold of {config['evaluation']['min_recall']}.")
+            raise SystemExit(1)
+        if auc_roc < config['evaluation']['min_auc_roc']:
+            print(f"Model does not meet the AUC ROC threshold of {config['evaluation']['min_auc_roc']}.")
+            raise SystemExit(1)
 
     return model, X_test_scaled, y_test, run_id
