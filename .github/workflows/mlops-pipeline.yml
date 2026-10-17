@@ -32,6 +32,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Debug DVC remote
+        run: |
+          dvc remote list
+          pwd
+          find dvc_store -type f | head -20
+          ls -l dvc_store/files/md5/26
+
       - name: Pull DVC data
         run: dvc pull
       
