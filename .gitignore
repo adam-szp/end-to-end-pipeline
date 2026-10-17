@@ -12,6 +12,8 @@ models/*.onnx
 
 mlruns/
 
+reports/
+
 metrics/
 
 __pycache__/

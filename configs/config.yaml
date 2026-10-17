@@ -20,7 +20,7 @@ data:
   random_state: 42
 
 model:
-  model_type: 'RandomForestClassifier'  # Can be RandomForestClassifier, LinearRegression, or LogisticRegression
+  model_type: 'RandomForestClassifier'  # Can be RandomForestClassifier, LinearRegression, or LogisticRegression, however some tests are only on RandomForestClassifier
   parameters: # Make sure to adjust these parameters based on the model type
     n_estimators: 300
     max_depth: 12
