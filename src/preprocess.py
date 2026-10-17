@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 def validate_dataframe(df, required_columns, target_column ) -> bool:
     """
@@ -12,12 +11,10 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
     bool: True if the DataFrame is valid, False otherwise.
     """
     if df.empty:
-        print("The DataFrame is empty.")
-        return False
+        raise ValueError("The DataFrame is empty.")
 
     if df.isnull().values.any():
         print("The DataFrame contains missing values.")
-        return False
 
     if df.duplicated().any():
         print("The DataFrame contains duplicate rows, will drop duplicates.")
@@ -25,12 +22,11 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
 
     missing = [col for col in required_columns if col not in df.columns]
     if missing:
-        print(f"The DataFrame is missing required columns: {missing}")
-        return False
+        raise ValueError(f"The DataFrame is missing required columns: {missing}")
 
     if target_column not in df.columns:
-        print(f'The target column "{target_column}" is not in the DataFrame')
-        return False
+        raise ValueError(f"The target column '{target_column}' is not in the DataFrame")
+
 
     return True
 
@@ -48,7 +44,7 @@ def clean_dataframe(df, numeric_columns, categorical_columns, date_columns, targ
     Returns:
     pd.DataFrame: The cleaned DataFrame.
     """
-
+    df = df.copy()  # Avoid modifying the original DataFrame
     for col in numeric_columns:
         if col in df.columns:
             df[col] =df[col].fillna(df[col].mean())
