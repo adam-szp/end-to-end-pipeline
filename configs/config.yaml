@@ -40,6 +40,7 @@ evaluation:
   min_f1: 0.50  # Minimum F1 score required to consider the model as acceptable
   min_precision: 0.45  # Minimum precision required to consider the model as acceptable
   min_accuracy: 0.80  # Minimum accuracy required to consider the model as acceptable
+  min_recall: 0.50  # Minimum recall required to consider the model as acceptable
 
 monitoring:
   drift_threshold: 0.3
