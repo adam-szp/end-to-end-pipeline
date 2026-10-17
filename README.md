@@ -7,6 +7,7 @@ The focus of the project was not an advanced model development, but the pipeline
 The target variable represents employee employment status and is encoded as:
 - Active = 0
 - Terminated = 1
+
 The model is trained as a classification problem to predict whether an employee is likely to be terminated. 
 
 ## Setup
