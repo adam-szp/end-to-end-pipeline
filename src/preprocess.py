@@ -20,8 +20,8 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
         return False
 
     if df.duplicated().any():
-        print("The DataFrame contains duplicate rows.")
-        return False
+        print("The DataFrame contains duplicate rows, will drop duplicates.")
+        df.drop_duplicates(inplace=True)
 
     missing = [col for col in required_columns if col not in df.columns]
     if missing:
@@ -34,14 +34,16 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
 
     return True
 
-def clean_dataframe(df, numeric_columns, categorical_columns):
+def clean_dataframe(df, numeric_columns, categorical_columns, date_columns, target_column):
     """
-    Clean the input DataFrame by handling missing values.
+    Clean the input DataFrame by handling missing values, as well as cleaning date columns into just the year and mapping target column to binary.
 
     Parameters:
     df (pd.DataFrame): The DataFrame to clean.
     numeric_columns (list): List of numeric column names.
     categorical_columns (list): List of categorical column names.
+    date_columns (list): List of date column names.
+    target_column (str): The name of the target column.
 
     Returns:
     pd.DataFrame: The cleaned DataFrame.
@@ -49,11 +51,19 @@ def clean_dataframe(df, numeric_columns, categorical_columns):
 
     for col in numeric_columns:
         if col in df.columns:
-            df[col].fillna(df[col].mean(), inplace=True)
+            df[col] =df[col].fillna(df[col].mean())
 
     for col in categorical_columns:
         if col in df.columns:
-            df[col].fillna(df[col].mode()[0], inplace=True)
+            df[col] = df[col].fillna(df[col].mode()[0])
+
+    for col in date_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+            df[col] = df[col].dt.year
+
+    if target_column in df.columns:
+        df[target_column] = df[target_column].map({'ACTIVE': 0, 'TERMINATED': 1})
 
     return df
 

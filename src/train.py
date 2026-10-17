@@ -44,21 +44,19 @@ def train_model(config):
 
     with mlflow.start_run():
 
-        df = load_data(config['data']['path'])
+        df = load_data(config['data']['raw_path'])
 
-        useless = ['EmployeeID' ,'recorddate_key', 'gender_full']
-        for col in useless:
-            if col in df.columns:
-                df.drop(columns=[col], inplace=True)
+        required = [config['data']['target_column']] + config['data']['numeric_columns'] + config['data']['categorical_columns']
+        to_drop = [col for col in df.columns if col not in required]
+        df.drop(columns=to_drop, inplace=True)
         
-        required = config['data']['target_column'] + config['data']['numeric_columns'] + config['data']['categorical_columns']
         if not validate_dataframe(df, required, config['data']['target_column']):
             sys.exit(1)
 
         quality = check_data_quality(df, config['data']['numeric_columns'])
         print (f"Data Quality: {quality['total_nulls']} nulls, {quality['total_duplicates']} duplicates")
         
-        df = clean_dataframe(df, config['data']['numeric_columns'], config['data']['categorical_columns'])
+        df = clean_dataframe(df, config['data']['numeric_columns'], config['data']['categorical_columns'], config['data']['date_columns'], config['data']['target_column'])
         df = encode_categoricals(df, config['data']['categorical_columns'])
 
         
@@ -84,9 +82,18 @@ def train_model(config):
 
         mlflow.log_param('model_type', config['model']['model_type'])
         mlflow.log_params(config['model']['parameters'])
-        mlflow.log_param('features_dropped', str(useless))
+        mlflow.log_param('features_dropped', str(to_drop))
 
-        mlflow.sklearn.log_model(model, "model")
+        if config["model"]["model_type"] == "RandomForestClassifier":
+            trusted_types = ["sklearn.tree._tree.Tree"]
+        else:
+            trusted_types = None
+        
+        mlflow.sklearn.log_model(
+            model,
+            "model",
+            skops_trusted_types=trusted_types
+        )
 
         config_path = "config_snapshot.json"
         with open(config_path, "w") as f:

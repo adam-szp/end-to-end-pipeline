@@ -16,17 +16,21 @@ data:
     - 'termtype_desc'
     - 'STATUS_YEAR'
     - 'BUSINESS_UNIT'
+  date_columns:
+    - 'orighiredate_key'
+    - 'terminationdate_key'
+    - 'STATUS_YEAR'
   test_size: 0.2
   random_state: 42
 
 model:
   model_type: 'RandomForestClassifier'  # Can be RandomForestClassifier, LinearRegression, or LogisticRegression
   parameters: # Make sure to adjust these parameters based on the model type
-    - n_estimators: 150
-    - max_depth: 10
-    - min_samples_split: 2
-    - class_weight: 'balanced'
-    - random_state: 42
+    n_estimators: 150
+    max_depth: 10
+    min_samples_split: 2
+    class_weight: 'balanced'
+    random_state: 42
 
 mlflow:
   experiment_name: 'employee_attrition'
