@@ -1,6 +1,8 @@
 data/**/*.csv
 data/**/*.parquet
 data/**/*.json.gz
+#For this project i specifically included /dvc_store in git commit so that itll be easier to dvc pull. 
+#I understand this goes against the norm, however it is mentioned in the project requirements that a localstorage is acceptable.
 
 models/*.pkl
 models/*.joblib
