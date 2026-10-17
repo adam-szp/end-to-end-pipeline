@@ -6,19 +6,15 @@ data:
     - 'length_of_service'
   categorical_columns:
     - 'orighiredate_key'
-    - 'terminationdate_key'
     - 'city_name'
     - 'department_name'
     - 'job_title'
     - 'store_name'
     - 'gender_short'
-    - 'termreason_desc'
-    - 'termtype_desc'
     - 'STATUS_YEAR'
     - 'BUSINESS_UNIT'
   date_columns:
     - 'orighiredate_key'
-    - 'terminationdate_key'
     - 'STATUS_YEAR'
   test_size: 0.2
   random_state: 42

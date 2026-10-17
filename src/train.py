@@ -132,7 +132,7 @@ def main():
         if 'recall' in config['evaluation']['metrics']:
             recall = metrics['recall']
             mlflow.log_metric('recall', round(recall, 4))
-        if 'f1' in config['evaluation']['metrics']:
+        if 'f1_score' in config['evaluation']['metrics']:
             f1 = metrics['f1_score']
             mlflow.log_metric('f1', round(f1, 4))
         if 'auc_roc' in config['evaluation']['metrics']:
