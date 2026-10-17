@@ -28,6 +28,7 @@ for index, row in runs.head(5).iterrows():
 
 best_run = runs.iloc[0]
 print(f"\nBest Run: {best_run['run_id'][:8]}...")
+print(f"  Run Name: {best_run['tags.mlflow.runName']}")
 print(f"  Model Type: {best_run['params.model_type']}")
 if 'f1_score' in config['evaluation']['metrics']:
     print(f"  F1 Score: {best_run['metrics.f1']:.4f}")
