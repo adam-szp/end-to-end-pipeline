@@ -60,6 +60,8 @@ def clean_dataframe(df, numeric_columns, categorical_columns, date_columns, targ
 
     if target_column in df.columns:
         df[target_column] = df[target_column].map({'ACTIVE': 0, 'TERMINATED': 1})
+    else:
+        print('Target column not in Dataframe')
 
     return df
 

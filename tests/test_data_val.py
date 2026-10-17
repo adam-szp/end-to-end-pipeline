@@ -1,7 +1,5 @@
 import pandas as pd
 import pytest
-import sys
-sys.path.append('src')  # Add the src directory to the path
 
 from utils import load_config
 
