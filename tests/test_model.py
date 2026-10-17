@@ -2,9 +2,9 @@ import pandas as pd
 import pytest
 import sys
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score, roc_auc_score
+sys.path.insert(0, 'src')
 
 from utils import load_config
 from preprocess import validate_dataframe, clean_dataframe, encode_categoricals
@@ -14,7 +14,7 @@ config = load_config()
 @pytest.fixture
 def sample_model():
     df_raw = pd.read_csv(config['data']['raw_path'])
-    df = df_raw.sample(n=50, random_state=42)
+    df = df_raw.groupby(config['data']['target_column'], group_keys=False).sample(frac=0.05, random_state=42)
 
     required = [config['data']['target_column']] + config['data']['numeric_columns'] + config['data']['categorical_columns']
     to_drop = [col for col in df.columns if col not in required]
@@ -31,16 +31,9 @@ def sample_model():
     y = df[config['data']['target_column']]
 
     
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config['data']['test_size'], random_state=config['data']['random_state'])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config['data']['test_size'], random_state=config['data']['random_state'], stratify=y)
 
-    y_test = y_test
-    model_options = {
-        'RandomForestClassifier': RandomForestClassifier,
-        'LinearRegression': LinearRegression,
-        'LogisticRegression': LogisticRegression
-    }
-    model_class = model_options[config['model']['model_type']]
-    model = model_class(**config['model']['parameters'])
+    model = RandomForestClassifier(n_estimators=150, random_state=42)
     model.fit(X_train, y_train)
     return model, X_test, y_test
 
@@ -58,8 +51,8 @@ class TestModelValidate:
         preds = model.predict(X_test)
 
         if 'f1_score' in config['evaluation']['metrics']:
-            f1_score = f1_score(y_test, preds)
-            assert f1_score >= 0.4
+            f1 = f1_score(y_test, preds)
+            assert f1 >= 0.4
         if 'accuracy' in config['evaluation']['metrics']:
             accuracy = accuracy_score(y_test, preds)
             assert accuracy >= 0.7

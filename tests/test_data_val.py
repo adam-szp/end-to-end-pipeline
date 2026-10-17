@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
+import sys
 
+sys.path.insert(0, 'src')
 from utils import load_config
 
 config = load_config()

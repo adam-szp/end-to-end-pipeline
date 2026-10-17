@@ -12,7 +12,7 @@ def sample_dataframe():
         'age': [25, 30, np.nan, 22],
         'length_of_service': [5, 10, 3, np.nan],
         'orighiredate_key': ['1/1/2020', '05/15/2019', '07/20/2021', '03/10/2018'],
-        'city_name': ['New York', 'Los Angeles', np.nan, 'Chicago'],
+        'city_name': ['New York', 'Los Angeles', np.nan, 'New York'],
         'department_name': ['Sales', 'Engineering', 'HR', np.nan],
         'job_title': ['Manager', 'Engineer', 'HR Specialist', 'Analyst'],
         'store_name': [1, 2, 3, 4],
@@ -70,13 +70,18 @@ class TestCleanDataframe:
 
 class TestEncodeCategoricals:
     def test_encode_categoricals_returns_dataframe(self, sample_dataframe):
-        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'job_title', 'gender_short'], 'STATUS')
+        cat_cols = ['city_name', 'department_name', 'job_title', 'gender_short']
+        encoded = encode_categoricals(sample_dataframe, cat_cols)
         assert isinstance(encoded, pd.DataFrame)
-        assert 'city_name' in encoded.columns
-        assert 'department_name' in encoded.columns
+
+        for col in cat_cols:
+            assert col not in encoded.columns
+
+        for col in cat_cols:
+            assert any(column.startswith(f'{col}_') for column in encoded.columns)
 
     def test_encode_categoricals_matches_expected_shape(self, sample_dataframe):
-        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'gender_short'], 'STATUS')
+        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'gender_short'])
         assert len(encoded) == len(sample_dataframe)
         assert encoded.shape[1] >= sample_dataframe.shape[1]
 
