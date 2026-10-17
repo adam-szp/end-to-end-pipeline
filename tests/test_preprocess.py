@@ -67,7 +67,29 @@ class TestCleanDataframe:
         result = clean_dataframe(sample_dataframe, ['age'], [], [], 'STATUS')
         assert result['age'].iloc[0] == 25
         assert result['age'].iloc[1] == 30
-        
+
 class TestEncodeCategoricals:
+    def test_encode_categoricals_returns_dataframe(self, sample_dataframe):
+        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'job_title', 'gender_short'], 'STATUS')
+        assert isinstance(encoded, pd.DataFrame)
+        assert 'city_name' in encoded.columns
+        assert 'department_name' in encoded.columns
+
+    def test_encode_categoricals_matches_expected_shape(self, sample_dataframe):
+        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'gender_short'], 'STATUS')
+        assert len(encoded) == len(sample_dataframe)
+        assert encoded.shape[1] >= sample_dataframe.shape[1]
+
     def test_creates_dummy_columns(self, sample_dataframe):
-        
+        result = encode_categoricals(sample_dataframe, ['gender_short'])
+        assert 'gender_short' not in result.columns
+        assert any('gender_short' in col for col in result.columns)
+
+    def test_drops_first_category(self, sample_dataframe):
+        result = encode_categoricals(sample_dataframe, ['gender_short'])
+        gender_cols = [col for col in result.columns if 'gender_short' in col]
+        assert len(gender_cols) == 1
+
+    def test_preserves_row_count(self, sample_dataframe):
+        result = encode_categoricals(sample_dataframe, ['gender_short', 'city_name'])
+        assert len(result) == len(sample_dataframe)
