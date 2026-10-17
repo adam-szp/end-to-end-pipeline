@@ -140,19 +140,19 @@ def main():
             mlflow.log_metric('auc_roc', round(auc_roc, 4))
 
 
-        if f1 < config['evaluation']['min_f1']:
+        if 'f1_score' in config['evaluation']['metrics'] and metrics['f1_score'] < config['evaluation']['min_f1']:
             print(f"Model does not meet the F1 score threshold of {config['evaluation']['min_f1']}.")
             raise SystemExit(1)
-        if precision < config['evaluation']['min_precision']:
+        if 'precision' in config['evaluation']['metrics'] and metrics['precision'] < config['evaluation']['min_precision']:
             print(f"Model does not meet the precision threshold of {config['evaluation']['min_precision']}.")
             raise SystemExit(1)
-        if accuracy < config['evaluation']['min_accuracy']:
+        if 'accuracy' in config['evaluation']['metrics'] and metrics['accuracy'] < config['evaluation']['min_accuracy']:
             print(f"Model does not meet the accuracy threshold of {config['evaluation']['min_accuracy']}.")
             raise SystemExit(1)
-        if recall < config['evaluation']['min_recall']:
+        if 'recall' in config['evaluation']['metrics'] and metrics['recall'] < config['evaluation']['min_recall']:
             print(f"Model does not meet the recall threshold of {config['evaluation']['min_recall']}.")
             raise SystemExit(1)
-        if auc_roc < config['evaluation']['min_auc_roc']:
+        if 'auc_roc' in config['evaluation']['metrics'] and metrics['roc_auc'] < config['evaluation']['min_auc_roc']:
             print(f"Model does not meet the AUC ROC threshold of {config['evaluation']['min_auc_roc']}.")
             raise SystemExit(1)
 

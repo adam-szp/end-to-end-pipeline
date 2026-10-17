@@ -8,6 +8,8 @@ models/*.h5
 models/*.pt
 models/*.onnx
 
+mlruns/
+
 metrics/
 
 __pycache__/
@@ -17,3 +19,5 @@ __pycache__/
 .ipynb_checkpoints/
 
 .DS_Store
+
+mlflow.db
