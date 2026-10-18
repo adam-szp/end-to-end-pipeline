@@ -14,13 +14,14 @@ def evaluate_model(model, X_test, y_test):
     dict: A dictionary containing evaluation metrics.
     """
     y_pred = model.predict(X_test)
+    pred_proba = model.predict_proba(X_test)
 
     metrics = {
         'accuracy': accuracy_score(y_test, y_pred),
         'precision': precision_score(y_test, y_pred, average='weighted'),
         'recall': recall_score(y_test, y_pred, average='weighted'),
         'f1_score': f1_score(y_test, y_pred, average='weighted'),
-        'roc_auc': roc_auc_score(y_test, y_pred, average='weighted')
+        'roc_auc': roc_auc_score(y_test, pred_proba, average='weighted')
     }
     
     print(f"Model Evaluation:\nAccuracy: {round(metrics['accuracy'], 4)}\nPrecision: {round(metrics['precision'], 4)}\nRecall: {round(metrics['recall'], 4)}\nF1 Score: {round(metrics['f1_score'], 4)}\nAUC ROC: {round(metrics['roc_auc'], 4)}")

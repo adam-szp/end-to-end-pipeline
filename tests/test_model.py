@@ -49,6 +49,7 @@ class TestModelValidate:
     def test_model_min_performance(self, sample_model):
         model, X_test, y_test = sample_model
         preds = model.predict(X_test)
+        preds_proba = model.predict_proba(X_test)
 
         if 'f1_score' in config['evaluation']['metrics']:
             f1 = f1_score(y_test, preds)
@@ -63,5 +64,5 @@ class TestModelValidate:
             recall = recall_score(y_test, preds)
             assert recall >= 0.4
         if 'auc_roc' in config['evaluation']['metrics']:
-            auc_roc = roc_auc_score(y_test, preds)
+            auc_roc = roc_auc_score(y_test, preds_proba)
             assert auc_roc >= 0.45
