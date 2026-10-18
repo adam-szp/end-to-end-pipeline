@@ -14,7 +14,7 @@ def evaluate_model(model, X_test, y_test):
     dict: A dictionary containing evaluation metrics.
     """
     y_pred = model.predict(X_test)
-    pred_proba = model.predict_proba(X_test)
+    pred_proba = model.predict_proba(X_test)[1:]
 
     metrics = {
         'accuracy': accuracy_score(y_test, y_pred),
