@@ -1,4 +1,4 @@
-name: MlOps Pipeline
+name: End-to-End Pipeline
 
 on:
   push:
