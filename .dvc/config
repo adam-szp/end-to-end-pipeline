@@ -1,4 +1,4 @@
 [core]
-    remote = localstorage
-['remote "localstorage"']
-    url = ../dvc_store
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/adam-szp/end-to-end-data.dvc
