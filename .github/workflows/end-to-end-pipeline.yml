@@ -37,7 +37,7 @@ jobs:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           dvc remote modify --local origin auth basic
-          dvc remote modify --local origin user "adam_szp"
+          dvc remote modify --local origin user "adam-szp"
           dvc remote modify --local origin password "$DAGSHUB_TOKEN"
 
       - name: Pull DVC data
@@ -76,7 +76,7 @@ jobs:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
           dvc remote modify --local origin auth basic
-          dvc remote modify --local origin user "adam_szp"
+          dvc remote modify --local origin user "adam-szp"
           dvc remote modify --local origin password "$DAGSHUB_TOKEN"
 
       - name: Pull DVC data
