@@ -32,6 +32,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Configure DVC authentication
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc remote modify --local origin access_key_id "$DAGSHUB_TOKEN"
+          dvc remote modify --local origin secret_access_key "$DAGSHUB_TOKEN"
+
       - name: Pull DVC data
         run: dvc pull
       
@@ -62,6 +69,13 @@ jobs:
         
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Configure DVC authentication
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc remote modify --local origin access_key_id "$DAGSHUB_TOKEN"
+          dvc remote modify --local origin secret_access_key "$DAGSHUB_TOKEN"
 
       - name: Pull DVC data
         run: dvc pull

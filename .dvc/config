@@ -1,5 +1,5 @@
 [core]
     remote = origin
 ['remote "origin"']
-    url = s3://dvc
-    endpointurl = https://dagshub.com/adam-szp/end-to-end-data.s3
+    auth = basic
+    url = https://dagshub.com/adam-szp/end-to-end-data.dvc
