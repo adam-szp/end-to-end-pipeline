@@ -10,8 +10,6 @@ models/*.h5
 models/*.pt
 models/*.onnx
 
-mlruns/
-
 reports/
 
 metrics/
