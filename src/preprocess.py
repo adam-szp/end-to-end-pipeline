@@ -1,4 +1,10 @@
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+
+# My chosen dataset does not have any categorical columns so there is no need to create an encode_categorical function.
 
 def validate_dataframe(df, required_columns, target_column ) -> bool:
     """
@@ -30,56 +36,54 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
 
     return True
 
-def clean_dataframe(df, numeric_columns, categorical_columns, date_columns, target_column):
+def clean_split_data(df, required_columns, target_column, test_size, random_state, stratify=None):
     """
-    Clean the input DataFrame by handling missing values, as well as cleaning date columns into just the year and mapping target column to binary.
+    Clean the input DataFrame by handling missing values and split the data using train_test_split.
 
     Parameters:
     df (pd.DataFrame): The DataFrame to clean.
-    numeric_columns (list): List of numeric column names.
-    categorical_columns (list): List of categorical column names.
-    date_columns (list): List of date column names.
+    required_columns (list): List of numeric column names.
     target_column (str): The name of the target column.
+    test_size (float): Test size percentage.
+    random_state (int): Random state int.
+    stratify (str): Whether to stratify the split data.
 
     Returns:
-    pd.DataFrame: The cleaned DataFrame.
+    train_test_split: The cleaned and split features and targets.
     """
     df = df.copy()  # Avoid modifying the original DataFrame
-    for col in numeric_columns:
+       
+    for col in required_columns:
         if col in df.columns:
-            df[col] =df[col].fillna(df[col].mean())
+            df[col] = df[col].replace(0, np.nan)
 
-    for col in categorical_columns:
-        if col in df.columns:
-            df[col] = df[col].fillna(df[col].mode()[0])
+    features = df.drop(columns=[target_column])
+    target = df[target_column]
 
-    for col in date_columns:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors='coerce')
-            df[col] = df[col].dt.year
+    return train_test_split(features, target, test_size=test_size, random_state=random_state, stratify=stratify)
 
-    if target_column in df.columns:
-        df[target_column] = df[target_column].map({'ACTIVE': 0, 'TERMINATED': 1})
-    else:
-        print('Target column not in Dataframe')
-
-    return df
-
-def encode_categoricals(df, categorical_columns):
+def impute_scale_data(x_train, x_test):
     """
-    Encode categorical columns in the DataFrame using One-hot Encoding.
+    Impute and then scale only on train data to prevent data leakage.
 
     Parameters:
-    df (pd.DataFrame): The DataFrame containing categorical columns.
-    categorical_columns (list): List of categorical column names to encode.
+    x_train (pd.Dataframe): Training Dataframe.
+    x_test (pd.Dataframe): Test Dataframe.
 
     Returns:
-    pd.DataFrame: The DataFrame with encoded categorical columns.
+    X_train (pd.Dataframe): Good Training Dataframe.
+    X_test (pd.Dataframe): Good Test Dataframe.
     """
-    df = df.copy()
-    df = pd.get_dummies(df, columns=categorical_columns, drop_first=True, dtype=int)
+    imputer = SimpleImputer(strategy="median")
+    scaler = StandardScaler()
 
-    return df
+    X_train = imputer.fit_transform(x_train)
+    X_test = imputer.transform(x_test)
+
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    return X_train, X_test
 
 def check_data_quality(df, numeric_columns):
     """
