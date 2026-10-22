@@ -1,5 +1,4 @@
 [core]
     remote = origin
 ['remote "origin"']
-    auth = basic
     url = https://dagshub.com/adam-szp/end-to-end-data.dvc
