@@ -36,7 +36,6 @@ model:
       min_samples_leaf: 5
       learning_rate: 0.05
       subsample: 0.8
-      class_weight: 'balanced'
       random_state: 42
 
 mlflow:

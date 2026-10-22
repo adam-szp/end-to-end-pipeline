@@ -54,7 +54,7 @@ def clean_split_data(df, feature_columns, target_column, test_size, random_state
     df = df.drop_duplicates()
 
     for col in feature_columns:
-        if col in df.columns:
+        if col in df.columns and col != 'Pregnancies':
             df[col] = df[col].replace(0, np.nan)
 
     features = df.drop(columns=[target_column])
