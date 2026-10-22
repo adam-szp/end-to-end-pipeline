@@ -4,97 +4,89 @@ import pytest
 import sys
 sys.path.append('src')  # Add the src directory to the path
 
-from preprocess import validate_dataframe, clean_dataframe, encode_categoricals
+from preprocess import validate_dataframe, clean_split_data, impute_scale_data
 
 @pytest.fixture
 def sample_dataframe():
     return pd.DataFrame({
-        'age': [25, 30, np.nan, 22],
-        'length_of_service': [5, 10, 3, np.nan],
-        'orighiredate_key': ['1/1/2020', '05/15/2019', '07/20/2021', '03/10/2018'],
-        'city_name': ['New York', 'Los Angeles', np.nan, 'New York'],
-        'department_name': ['Sales', 'Engineering', 'HR', np.nan],
-        'job_title': ['Manager', 'Engineer', 'HR Specialist', 'Analyst'],
-        'store_name': [1, 2, 3, 4],
-        'gender_short': ['M', 'F', 'M', np.nan],
-        'STATUS_YEAR': [2006, 2007, 2008, 2009],
-        'BUSINESS_UNIT': ['HEADOFFICE', 'RETAIL', 'RETAIL', 'HEADOFFICE'],
-        'STATUS': ['ACTIVE', 'TERMINATED', 'ACTIVE', 'TERMINATED']
+        'Pregnancies': [1, 2, 3, 14],
+        'Glucose': [20, 100, 141, 0],
+        'BloodPressure': [65, 0, 95, 50],
+        'SkinThickness': [25, 30, 50, 90],
+        'Insulin': [0, 35, 50, 700],
+        'BMI': [30.2, 40, 45.3, 67],
+        'DiabetesPedigreeFunction': [0.09, 0.25, 0.30, 1.56],
+        'Age': [22, 0, 40, 90],
+        'Outcome': [1, 0, 1, 0]
     })
+
 
 class TestValidateDataframe:
     def test_validate_dataframe_success(self, sample_dataframe):
-        required_columns = ['age', 'length_of_service', 'orighiredate_key', 'BUSINESS_UNIT', 'STATUS']
-        target_column = 'STATUS'
+        required_columns = ['Pregnancies', 'BloodPressure', 'Insulin', 'BMI', 'Outcome']
+        target_column = 'Outcome'
         assert validate_dataframe(sample_dataframe, required_columns, target_column) == True
 
     def test_validate_dataframe_missing_column(self, sample_dataframe):
         with pytest.raises(ValueError, match="The DataFrame is missing required columns*"):
-            required_columns = ['age', 'missing_column']
-            target_column = 'STATUS'
+            required_columns = ['Age', 'missing_column']
+            target_column = 'Outcome'
             validate_dataframe(sample_dataframe, required_columns, target_column)
 
     def test_validate_dataframe_missing_target(self, sample_dataframe):
         with pytest.raises(ValueError, match="The target column *"):
-            required_columns = ['age', 'length_of_service']
+            required_columns = ['Age', 'Insulin']
             target_column = 'MISSING_TARGET'
             validate_dataframe(sample_dataframe, required_columns, target_column)
 
     def test_empty_dataframe(self):
-        empty_df = pd.DataFrame({'age':[], 'STATUS':[]})
+        empty_df = pd.DataFrame({'Age':[], 'Outcome':[]})
         with pytest.raises(ValueError, match="The DataFrame is empty."):
-            required_columns = ['age']
-            target_column = 'STATUS'
+            required_columns = ['Age']
+            target_column = 'Outcome'
             validate_dataframe(empty_df, required_columns, target_column)
 
 class TestCleanDataframe:
-    def test_fills_numeric_nulls(self, sample_dataframe):
-        result = clean_dataframe(sample_dataframe, ['age', 'length_of_service'], ['city_name', 'job_title'], ['orighiredate_key'], 'STATUS')
-        assert result['age'].isna().sum() == 0
-        assert result['length_of_service'].isna().sum() == 0
+    def test_fills_zeros(self, sample_dataframe):
+        x_train, x_test, _, _ = clean_split_data(sample_dataframe, ['Age', 'BloodPressure'], 'Outcome', 0.2, 42)
+        X_train, X_test = impute_scale_data(x_train, x_test)
+        assert X_train['Age'].isna().sum() == 0
+        assert X_test['BloodPressure'].isna().sum() == 0
 
     def test_does_not_modify_original(self, sample_dataframe):
-        original_nulls = sample_dataframe['age'].isna().sum()
-        clean_dataframe(sample_dataframe, ['age', 'length_of_service'], ['city_name', 'job_title'], ['orighiredate_key'], 'STATUS')
-        assert sample_dataframe['age'].isna().sum() == original_nulls
+        original = sample_dataframe.copy(deep=True)
 
-    def test_fills_with_mean_for_numeric(self, sample_dataframe):
-        result = clean_dataframe(sample_dataframe, ['age'], [], [], 'STATUS')
-        expected_mean = sample_dataframe['age'].mean()
-        assert result['age'].iloc[2] == expected_mean
+        clean_split_data(
+            sample_dataframe,
+            feature_columns=["Glucose", "BMI"],
+            target_column="Outcome",
+            test_size=0.2,
+            random_state=42
+        )
 
-    def test_non_null_values_unchanged(self, sample_dataframe):
-        result = clean_dataframe(sample_dataframe, ['age'], [], [], 'STATUS')
-        assert result['age'].iloc[0] == 25
-        assert result['age'].iloc[1] == 30
+        pd.testing.assert_frame_equal(sample_dataframe, original)
 
-class TestEncodeCategoricals:
-    def test_encode_categoricals_returns_dataframe(self, sample_dataframe):
-        cat_cols = ['city_name', 'department_name', 'job_title', 'gender_short']
-        encoded = encode_categoricals(sample_dataframe, cat_cols)
-        assert isinstance(encoded, pd.DataFrame)
+    def test_fills_with_median_for_zeros(self, sample_dataframe):
+        sample = sample_dataframe.drop(columns=['Outcome']).copy()
 
-        for col in cat_cols:
-            assert col not in encoded.columns
+        x_train = sample.copy()
+        x_test = sample.copy()
 
-        for col in cat_cols:
-            assert any(column.startswith(f'{col}_') for column in encoded.columns)
+        _, _, imputer, _ = impute_scale_data(x_train, x_test)
 
-    def test_encode_categoricals_matches_expected_shape(self, sample_dataframe):
-        encoded = encode_categoricals(sample_dataframe, ['city_name', 'department_name', 'gender_short'])
-        assert len(encoded) == len(sample_dataframe)
-        assert encoded.shape[1] >= sample_dataframe.shape[1]
+        expected_median = x_train['Glucose'].median()
 
-    def test_creates_dummy_columns(self, sample_dataframe):
-        result = encode_categoricals(sample_dataframe, ['gender_short'])
-        assert 'gender_short' not in result.columns
-        assert any('gender_short' in col for col in result.columns)
+        glucose_idx = x_train.columns.get_loc('Glucose')
 
-    def test_drops_first_category(self, sample_dataframe):
-        result = encode_categoricals(sample_dataframe, ['gender_short'])
-        gender_cols = [col for col in result.columns if 'gender_short' in col]
-        assert len(gender_cols) == 1
+        assert imputer.statistics_[glucose_idx] == expected_median
 
-    def test_preserves_row_count(self, sample_dataframe):
-        result = encode_categoricals(sample_dataframe, ['gender_short', 'city_name'])
-        assert len(result) == len(sample_dataframe)
+    def test_scale_numerics_to_expected_ranges(self, sample_dataframe):
+        sample = sample_dataframe.drop(columns=["Outcome"])
+
+        X_train, _, _, _ = impute_scale_data(sample, sample.copy())
+
+        # Check means are approximately 0
+        assert np.allclose(X_train.mean(axis=0), 0, atol=1e-7)
+
+        # Check standard deviations are approximately 1
+        assert np.allclose(X_train.std(axis=0), 1, atol=1e-7)

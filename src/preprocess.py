@@ -23,8 +23,7 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
         print("The DataFrame contains missing values.")
 
     if df.duplicated().any():
-        print("The DataFrame contains duplicate rows, will drop duplicates.")
-        df.drop_duplicates(inplace=True)
+        print("The DataFrame contains duplicate rows, clean_split_data will drop duplicates.")
 
     missing = [col for col in required_columns if col not in df.columns]
     if missing:
@@ -52,7 +51,8 @@ def clean_split_data(df, feature_columns, target_column, test_size, random_state
     train_test_split: The cleaned and split features and targets.
     """
     df = df.copy()  # Avoid modifying the original DataFrame
-       
+    df = df.drop_duplicates()
+
     for col in feature_columns:
         if col in df.columns:
             df[col] = df[col].replace(0, np.nan)
