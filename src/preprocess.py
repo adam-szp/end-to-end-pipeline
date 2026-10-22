@@ -36,13 +36,13 @@ def validate_dataframe(df, required_columns, target_column ) -> bool:
 
     return True
 
-def clean_split_data(df, required_columns, target_column, test_size, random_state, stratify=None):
+def clean_split_data(df, feature_columns, target_column, test_size, random_state):
     """
     Clean the input DataFrame by handling missing values and split the data using train_test_split.
 
     Parameters:
     df (pd.DataFrame): The DataFrame to clean.
-    required_columns (list): List of numeric column names.
+    feature_columns (list): List of feature column names.
     target_column (str): The name of the target column.
     test_size (float): Test size percentage.
     random_state (int): Random state int.
@@ -53,14 +53,14 @@ def clean_split_data(df, required_columns, target_column, test_size, random_stat
     """
     df = df.copy()  # Avoid modifying the original DataFrame
        
-    for col in required_columns:
+    for col in feature_columns:
         if col in df.columns:
             df[col] = df[col].replace(0, np.nan)
 
     features = df.drop(columns=[target_column])
     target = df[target_column]
 
-    return train_test_split(features, target, test_size=test_size, random_state=random_state, stratify=stratify)
+    return train_test_split(features, target, test_size=test_size, random_state=random_state, stratify=target)
 
 def impute_scale_data(x_train, x_test):
     """
@@ -73,6 +73,8 @@ def impute_scale_data(x_train, x_test):
     Returns:
     X_train (pd.Dataframe): Good Training Dataframe.
     X_test (pd.Dataframe): Good Test Dataframe.
+    imputer: The fitted imputer to log later.
+    scaler: The fitted scaler to log later.
     """
     imputer = SimpleImputer(strategy="median")
     scaler = StandardScaler()
@@ -83,7 +85,7 @@ def impute_scale_data(x_train, x_test):
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
 
-    return X_train, X_test
+    return X_train, X_test, imputer, scaler
 
 def check_data_quality(df, numeric_columns):
     """

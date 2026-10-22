@@ -14,42 +14,42 @@ data:
   date_columns: []
   test_size: 0.2
   random_state: 42
-  stratify: 'y'
 
 model:
   model_type: 'LogisticRegression'  # Can be RandomForestClassifier, GradientBoostingClassifier, or LogisticRegression, however some tests are only on RandomForestClassifier
-lr_parameters: # Make sure to adjust these parameters based on the model type
-    C: 1
-    solver: 'lbfgs'
-    class_weight: 'balanced'
-    random_state: 42
-rf_parameters: # Make sure to adjust these parameters based on the model type
-    n_estimators: 200
-    max_depth: 5
-    min_samples_split: 10
-    min_samples_leaf: 4
-    class_weight: 'balanced'
-    random_state: 42
-gb_parameters: # Make sure to adjust these parameters based on the model type
-    n_estimators: 150
-    max_depth: 2
-    min_samples_split: 10
-    min_samples_leaf: 5
-    learning_rate: 0.05
-    subsample: 0.8
-    class_weight: 'balanced'
-    random_state: 42
+  lr_parameters: # Make sure to adjust these parameters based on the model type
+      C: 1
+      solver: 'lbfgs'
+      class_weight: 'balanced'
+      random_state: 42
+  rf_parameters: # Make sure to adjust these parameters based on the model type
+      n_estimators: 200
+      max_depth: 5
+      min_samples_split: 10
+      min_samples_leaf: 4
+      class_weight: 'balanced'
+      random_state: 42
+  gb_parameters: # Make sure to adjust these parameters based on the model type
+      n_estimators: 150
+      max_depth: 2
+      min_samples_split: 10
+      min_samples_leaf: 5
+      learning_rate: 0.05
+      subsample: 0.8
+      class_weight: 'balanced'
+      random_state: 42
 
 mlflow:
   experiment_name: 'diabetes_onset'
 
 evaluation:
   metrics:  # Can include any combination of the following metrics based on the model type: accuracy, precision, recall, f1_score, auc_roc
-    - 'accuracy'
+    - 'auc_roc'
     - 'precision'
     - 'recall'
     - 'f1_score'
   min_f1: 0.50  # Minimum F1 score required to consider the model as acceptable
-  min_precision: 0.45  # Minimum precision required to consider the model as acceptable
-  min_accuracy: 0.80  # Minimum accuracy required to consider the model as acceptable
-  min_recall: 0.50  # Minimum recall required to consider the model as acceptable
+  min_precision: 0.50  # Minimum precision required to consider the model as acceptable
+  min_accuracy: 0.60  # Minimum accuracy required to consider the model as acceptable
+  min_recall: 0.70  # Minimum recall required to consider the model as acceptable
+  min_auc_roc: .75  # Minimum auc_roc required to consider the model as acceptable
