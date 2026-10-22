@@ -19,8 +19,8 @@ class TestDataValidate:
 
     def test_target_values(self, sample_data):
         target = config['data']['target_column']
-        assert set(sample_data[target].unique()) <= {'ACTIVE', 'TERMINATED'}
+        assert set(sample_data[target].unique()) <= {0, 1}
 
     def test_numeric_range(self, sample_data):
-        assert sample_data['age'].between(18, 66).all()
-        assert sample_data['length_of_service'].between(0, 27).all()
+        assert sample_data['Age'].between(20, 82).all()
+        assert sample_data['DiabetesPedigreeFunction'].between(0.07, 2.43).all()
