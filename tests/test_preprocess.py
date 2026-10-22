@@ -9,15 +9,15 @@ from preprocess import validate_dataframe, clean_split_data, impute_scale_data
 @pytest.fixture
 def sample_dataframe():
     return pd.DataFrame({
-        'Pregnancies': [1, 2, 3, 14],
-        'Glucose': [20, 100, 141, 0],
-        'BloodPressure': [65, 0, 95, 50],
-        'SkinThickness': [25, 30, 50, 90],
-        'Insulin': [0, 35, 50, 700],
-        'BMI': [30.2, 40, 45.3, 67],
-        'DiabetesPedigreeFunction': [0.09, 0.25, 0.30, 1.56],
-        'Age': [22, 0, 40, 90],
-        'Outcome': [1, 0, 1, 0]
+        'Pregnancies': [1, 2, 3, 14, 3],
+        'Glucose': [20, 100, 141, 0, 96],
+        'BloodPressure': [65, 0, 95, 50, 60],
+        'SkinThickness': [25, 30, 50, 90, 35],
+        'Insulin': [0, 35, 50, 700, 300],
+        'BMI': [30.2, 40, 45.3, 67, 50.2],
+        'DiabetesPedigreeFunction': [0.09, 0.25, 0.30, 1.56, 0.5],
+        'Age': [22, 0, 40, 90, 85],
+        'Outcome': [1, 0, 1, 0, 0]
     })
 
 
@@ -48,10 +48,13 @@ class TestValidateDataframe:
 
 class TestCleanDataframe:
     def test_fills_zeros(self, sample_dataframe):
-        x_train, x_test, _, _ = clean_split_data(sample_dataframe, ['Age', 'BloodPressure'], 'Outcome', 0.2, 42)
-        X_train, X_test = impute_scale_data(x_train, x_test)
-        assert X_train['Age'].isna().sum() == 0
-        assert X_test['BloodPressure'].isna().sum() == 0
+        required_columns = ['Pregnancies', 'BloodPressure', 'Insulin', 'BMI', 'Age']
+
+        x_train, x_test, _, _ = clean_split_data(sample_dataframe, required_columns, 'Outcome', 0.4, 42)
+        X_train, X_test, _, _ = impute_scale_data(x_train, x_test)
+        
+        assert not np.isnan(X_train).any()
+        assert not np.isnan(X_test).any()
 
     def test_does_not_modify_original(self, sample_dataframe):
         original = sample_dataframe.copy(deep=True)
@@ -60,7 +63,7 @@ class TestCleanDataframe:
             sample_dataframe,
             feature_columns=["Glucose", "BMI"],
             target_column="Outcome",
-            test_size=0.2,
+            test_size=0.4,
             random_state=42
         )
 
