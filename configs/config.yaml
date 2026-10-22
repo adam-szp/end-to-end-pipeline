@@ -1,35 +1,47 @@
 data:
-  raw_path: 'data/raw/MFG10YearTerminationData.csv'
-  target_column: 'STATUS'
+  raw_path: 'data/raw/diabetes.csv'
+  target_column: 'Outcome'
   numeric_columns:
-    - 'age'
-    - 'length_of_service'
-  categorical_columns:
-    - 'orighiredate_key'
-    - 'city_name'
-    - 'department_name'
-    - 'job_title'
-    - 'store_name'
-    - 'gender_short'
-    - 'STATUS_YEAR'
-    - 'BUSINESS_UNIT'
-  date_columns:
-    - 'orighiredate_key'
-    - 'STATUS_YEAR'
+    - 'Pregnancies'
+    - 'Glucose'
+    - 'BloodPressure'
+    - 'SkinThickness'
+    - 'Insulin'
+    - 'BMI'
+    - 'DiabetesPedigreeFunction'
+    - 'Age'
+  categorical_columns: []
+  date_columns: []
   test_size: 0.2
   random_state: 42
+  stratify: 'y'
 
 model:
-  model_type: 'RandomForestClassifier'  # Can be RandomForestClassifier, LinearRegression, or LogisticRegression, however some tests are only on RandomForestClassifier
-  parameters: # Make sure to adjust these parameters based on the model type
-    n_estimators: 300
-    max_depth: 12
-    min_samples_split: 2
+  model_type: 'LogisticRegression'  # Can be RandomForestClassifier, GradientBoostingClassifier, or LogisticRegression, however some tests are only on RandomForestClassifier
+lr_parameters: # Make sure to adjust these parameters based on the model type
+    C: 1
+    solver: 'lbfgs'
+    class_weight: 'balanced'
+    random_state: 42
+rf_parameters: # Make sure to adjust these parameters based on the model type
+    n_estimators: 200
+    max_depth: 5
+    min_samples_split: 10
+    min_samples_leaf: 4
+    class_weight: 'balanced'
+    random_state: 42
+gb_parameters: # Make sure to adjust these parameters based on the model type
+    n_estimators: 150
+    max_depth: 2
+    min_samples_split: 10
+    min_samples_leaf: 5
+    learning_rate: 0.05
+    subsample: 0.8
     class_weight: 'balanced'
     random_state: 42
 
 mlflow:
-  experiment_name: 'employee_attrition'
+  experiment_name: 'diabetes_onset'
 
 evaluation:
   metrics:  # Can include any combination of the following metrics based on the model type: accuracy, precision, recall, f1_score, auc_roc
@@ -41,7 +53,3 @@ evaluation:
   min_precision: 0.45  # Minimum precision required to consider the model as acceptable
   min_accuracy: 0.80  # Minimum accuracy required to consider the model as acceptable
   min_recall: 0.50  # Minimum recall required to consider the model as acceptable
-
-monitoring:
-  drift_threshold: 0.3
-  report_path: 'reports/drift_report.html'

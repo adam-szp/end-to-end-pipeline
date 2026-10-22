@@ -4,12 +4,10 @@ import mlflow.sklearn
 import sys
 import json
 import os
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
 from utils import load_config, load_hash
-from preprocess import validate_dataframe, clean_dataframe, encode_categoricals, check_data_quality
+from preprocess import validate_dataframe, clean_split_data, impute_scale_data, check_data_quality
 from evaluate import evaluate_model
 
 config = load_config()
@@ -56,32 +54,21 @@ def train_model(config):
         quality = check_data_quality(df, config['data']['numeric_columns'])
         print (f"Data Quality: {quality['total_nulls']} nulls, {quality['total_duplicates']} duplicates")
         
-        df = clean_dataframe(df, config['data']['numeric_columns'], config['data']['categorical_columns'], config['data']['date_columns'], config['data']['target_column'])
-        df = encode_categoricals(df, config['data']['categorical_columns'])
+        X_train, X_test, y_train, y_test = clean_split_data(df, required, config['data']['target_column'], config['data']['test_size'], config['data']['random_state'], config['data']['stratify'])
 
+        X_train_scaled, X_test_scaled = impute_scale_data(X_train, X_test)
+
+        if config['model']['model_type'] == 'RandomForestClassifier':
+            model = RandomForestClassifier(**config['model']['rf_parameters'])
+        if config['model']['model_type'] == 'LogisticRegression':
+            model = LogisticRegression(**config['model']['lr_parameters'])
+        if config['model']['model_type'] == 'GradientBoostingClassifier':
+            model = GradientBoostingClassifier(**config['model']['gb_parameters'])
         
-        X = df.drop(columns=[config['data']['target_column']])
-        y = df[config['data']['target_column']]
-
-        
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config['data']['test_size'], random_state=config['data']['random_state'])
-
-        
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-
-        model_options = {
-            'RandomForestClassifier': RandomForestClassifier,
-            'LinearRegression': LinearRegression,
-            'LogisticRegression': LogisticRegression
-        }
-        model_class = model_options[config['model']['model_type']]
-        model = model_class(**config['model']['parameters'])
         model.fit(X_train_scaled, y_train)
 
         mlflow.log_param('model_type', config['model']['model_type'])
-        mlflow.log_params(config['model']['parameters'])
+        mlflow.log_params(model.get_params())
         mlflow.log_param('features_dropped', str(to_drop))
 
         if config["model"]["model_type"] == "RandomForestClassifier":
