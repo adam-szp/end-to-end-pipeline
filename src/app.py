@@ -46,7 +46,7 @@ class PatientData(BaseModel):
 def load_models():
     llm = pipeline(
         "text-generation",
-        model="Qwen/Qwen3-4B-Instruct-2507",
+        model="Qwen/Qwen2.5-1.5B-Instruct",
         device_map="auto",
         dtype="auto"
     )
@@ -64,7 +64,7 @@ def ask_llm(llm, system_prompt, user_input):
 
     response = llm(
         messages,
-        max_new_tokens=300,
+        max_new_tokens=350,
         do_sample=False,
         return_full_text=False
     )
@@ -84,20 +84,15 @@ def extract_features(llm, user_input):
     Return ONLY valid JSON with these keys:
     {features}
 
-    Also include "in_scope": true or false.
+    Recognize natural language and common alternative names
+    for each feature (e.g., age, blood sugar, blood pressure,
+    pregnancy count, skinfold thickness, insulin, BMI, family history score).
 
-    Rules:
-    - Extract only numbers the user provides.
-    - Use null for missing or unclear values.
-    - Never guess missing measurements.
-    - Pregnancies means number of pregnancies, not children.
-    - BloodPressure means diastolic blood pressure.
-    - For a reading of 120/80, use 80.
-    - Do not assume measurement units.
-    - If values conflict, use null.
-    - If the request is unrelated to diabetes classification,
-    set in_scope to false.
-    - Return JSON only. No explanations or markdown.
+    Return JSON with all features and an "in_scope" boolean.
+    Use numbers for known values and null for missing or ambiguous values.
+    Never guess missing measurements or calculate unknown scores.
+    Set in_scope to false only for unrelated requests.
+    Return JSON only.
     """
 
     response = ask_llm(llm, prompt, user_input)
@@ -130,24 +125,22 @@ def predict_diabetes(data, model, imputer, scaler):
 
 def explain_prediction(llm, prediction, probability, missing):
     prompt = """
-    Explain the result of an experimental diabetes classifier.
+    Explain the diabetes model's prediction in a natural,
+    conversational way that is easy for anyone to understand.
 
-    Rules:
-    - Class 1 means predicted diabetes.
-    - Class 0 means predicted no diabetes.
-    - Explain the result in simple language.
-    - This is not a medical diagnosis.
-    - The model score is not a validated medical risk.
-    - Mention that the Pima dataset is small and historical.
-    - Mention any measurements filled using training medians.
-    - Do not invent medical causes or feature importance.
-    - Keep the explanation short.
+    Explain what the result means without repeating technical
+    terms, raw model outputs, or unnecessary details.
+    Keep it brief, friendly, and direct, but do not say something like "the model thinks you have diabetes".
+
+    If measurements were estimated, briefly mention that they were estimated.
+    Don't diagnose the user or present the result as medical certainty.
+    Don't repeat the exact percentage because it is already displayed.
     """
 
     user_input = f"""
-    Prediction: {prediction}
-    Positive-class model score: {probability:.4f}
-    Imputed measurements: {missing}
+    Prediction: {prediction} (1 = diabetes, 0 = no diabetes)
+    Model score for diabetes: {probability:.4f}
+    Estimated measurements: {missing}
     """
 
     return ask_llm(llm, prompt, user_input)
@@ -282,9 +275,9 @@ def main():
                     st.subheader("Model Result")
 
                     if prediction == 1:
-                        st.write("**Classification: Diabetes (1)**")
+                        st.write("**Classification: Diabetes**")
                     else:
-                        st.write("**Classification: No Diabetes (0)**")
+                        st.write("**Classification: No Diabetes**")
 
                     st.metric(
                         "Positive-class model score",
