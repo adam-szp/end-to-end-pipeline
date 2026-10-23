@@ -16,7 +16,7 @@ data:
   random_state: 42
 
 model:
-  model_type: 'LogisticRegression'  # Can be RandomForestClassifier, GradientBoostingClassifier, or LogisticRegression, however some tests are only on RandomForestClassifier
+  model_type: 'GradientBoostingClassifier'  # Can be RandomForestClassifier, GradientBoostingClassifier, or LogisticRegression, however some tests are only on RandomForestClassifier
   lr_parameters: # Make sure to adjust these parameters based on the model type
       C: 1
       solver: 'lbfgs'
@@ -24,17 +24,17 @@ model:
       random_state: 42
   rf_parameters: # Make sure to adjust these parameters based on the model type
       n_estimators: 200
-      max_depth: 5
+      max_depth: 8
       min_samples_split: 10
-      min_samples_leaf: 4
+      min_samples_leaf: 2
       class_weight: 'balanced'
       random_state: 42
   gb_parameters: # Make sure to adjust these parameters based on the model type
-      n_estimators: 150
+      n_estimators: 250
       max_depth: 2
       min_samples_split: 10
       min_samples_leaf: 5
-      learning_rate: 0.05
+      learning_rate: 0.03
       subsample: 0.8
       random_state: 42
 
