@@ -152,142 +152,146 @@ def explain_prediction(llm, prediction, probability, missing):
 
     return ask_llm(llm, prompt, user_input)
 
+def main():
 
-st.title("Diabetes Classification Assistant")
+    st.title("Diabetes Classification Assistant")
 
-st.write(
-    "Describe your measurements and I'll use a trained "
-    "machine learning model to make a classification."
-)
+    st.write(
+        "Describe your measurements and I'll use a trained "
+        "machine learning model to make a classification."
+    )
 
-st.caption("Educational demonstration only. Not medical advice.")
-
-
-if "data" not in st.session_state:
-    st.session_state.data = None
-
-if "asked" not in st.session_state:
-    st.session_state.asked = False
+    st.caption("Educational demonstration only. Not medical advice.")
 
 
-if st.session_state.data is None:
+    if "data" not in st.session_state:
+        st.session_state.data = None
 
-    with st.form("initial"):
-        user_input = st.text_area(
-            "Your measurements",
-            placeholder="I'm 35, glucose is 148, and BMI is 33.6."
-        )
-        submitted = st.form_submit_button("Analyze")
-
-    if submitted:
-        if not user_input.strip():
-            st.warning("Please enter your measurements.")
-        else:
-            try:
-                with st.spinner("Reading your input..."):
-                    llm, model, imputer, scaler = load_models()
-                    data = extract_features(llm, user_input)
-
-                st.session_state.data = data
-                st.rerun()
-
-            except (ValueError, RuntimeError, OSError) as e:
-                st.error(str(e))
+    if "asked" not in st.session_state:
+        st.session_state.asked = False
 
 
+    if st.session_state.data is None:
 
-else:
-    data = st.session_state.data
-
-    missing = [
-        feature for feature in features
-        if data[feature] is None
-    ]
-
-    
-    if missing and not st.session_state.asked:
-
-        st.write("I'm missing some measurements:")
-        st.write(", ".join(missing))
-
-        with st.form("followup"):
-            extra_input = st.text_area(
-                "Can you provide any of these measurements?"
+        with st.form("initial"):
+            user_input = st.text_area(
+                "Your measurements",
+                placeholder="I'm 35, glucose is 148, and BMI is 33.6."
             )
+            submitted = st.form_submit_button("Analyze")
 
-            submitted = st.form_submit_button("Continue")
-            skipped = st.form_submit_button("I don't know")
+        if submitted:
+            if not user_input.strip():
+                st.warning("Please enter your measurements.")
+            else:
+                try:
+                    with st.spinner("Reading your input..."):
+                        llm, model, imputer, scaler = load_models()
+                        data = extract_features(llm, user_input)
 
-        if submitted or skipped:
-            try:
-                if submitted and extra_input.strip():
-                    llm, _, _, _ = load_models()
-                    extra = extract_features(llm, extra_input)
+                    st.session_state.data = data
+                    st.rerun()
 
-                    for feature in features:
-                        if data[feature] is None:
-                            data[feature] = extra[feature]
+                except (ValueError, RuntimeError, OSError) as e:
+                    st.error(str(e))
 
-                st.session_state.asked = True
-                st.rerun()
 
-            except (ValueError, RuntimeError) as e:
-                st.error(str(e))
 
     else:
-        proceed = False
+        data = st.session_state.data
 
-        if missing:
-            st.warning(
-                "Still missing: " + ", ".join(missing)
-            )
+        missing = [
+            feature for feature in features
+            if data[feature] is None
+        ]
 
-            st.write(
-                "I can fill these using the training-data medians, "
-                "but the prediction will be less reliable."
-            )
+        
+        if missing and not st.session_state.asked:
 
-            proceed = st.button("Predict using medians")
+            st.write("I'm missing some measurements:")
+            st.write(", ".join(missing))
 
-        else:
-            proceed = True
-
-        if proceed:
-            try:
-                with st.spinner("Running prediction..."):
-                    llm, model, imputer, scaler = load_models()
-
-                    prediction, probability = predict_diabetes(
-                        data, model, imputer, scaler
-                    )
-
-                    explanation = explain_prediction(
-                        llm, prediction, probability, missing
-                    )
-
-                st.subheader("Model Result")
-
-                if prediction == 1:
-                    st.write("**Classification: Diabetes (1)**")
-                else:
-                    st.write("**Classification: No Diabetes (0)**")
-
-                st.metric(
-                    "Positive-class model score",
-                    f"{probability:.1%}"
+            with st.form("followup"):
+                extra_input = st.text_area(
+                    "Can you provide any of these measurements?"
                 )
 
-                st.write(explanation)
+                submitted = st.form_submit_button("Continue")
+                skipped = st.form_submit_button("I don't know")
 
-                if missing:
-                    st.info(
-                        "Imputed measurements: " + ", ".join(missing)
+            if submitted or skipped:
+                try:
+                    if submitted and extra_input.strip():
+                        llm, _, _, _ = load_models()
+                        extra = extract_features(llm, extra_input)
+
+                        for feature in features:
+                            if data[feature] is None:
+                                data[feature] = extra[feature]
+
+                    st.session_state.asked = True
+                    st.rerun()
+
+                except (ValueError, RuntimeError) as e:
+                    st.error(str(e))
+
+        else:
+            proceed = False
+
+            if missing:
+                st.warning(
+                    "Still missing: " + ", ".join(missing)
+                )
+
+                st.write(
+                    "I can fill these using the training-data medians, "
+                    "but the prediction will be less reliable."
+                )
+
+                proceed = st.button("Predict using medians")
+
+            else:
+                proceed = True
+
+            if proceed:
+                try:
+                    with st.spinner("Running prediction..."):
+                        llm, model, imputer, scaler = load_models()
+
+                        prediction, probability = predict_diabetes(
+                            data, model, imputer, scaler
+                        )
+
+                        explanation = explain_prediction(
+                            llm, prediction, probability, missing
+                        )
+
+                    st.subheader("Model Result")
+
+                    if prediction == 1:
+                        st.write("**Classification: Diabetes (1)**")
+                    else:
+                        st.write("**Classification: No Diabetes (0)**")
+
+                    st.metric(
+                        "Positive-class model score",
+                        f"{probability:.1%}"
                     )
 
-            except (ValueError, RuntimeError, OSError) as e:
-                st.error(str(e))
+                    st.write(explanation)
 
-    if st.button("Start Over"):
-        st.session_state.data = None
-        st.session_state.asked = False
-        st.rerun()
+                    if missing:
+                        st.info(
+                            "Imputed measurements: " + ", ".join(missing)
+                        )
+
+                except (ValueError, RuntimeError, OSError) as e:
+                    st.error(str(e))
+
+        if st.button("Start Over"):
+            st.session_state.data = None
+            st.session_state.asked = False
+            st.rerun()
+
+if __name__ == '__main__':
+    main()
