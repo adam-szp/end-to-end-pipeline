@@ -1,9 +1,10 @@
 import pytest
+import sys
 from unittest.mock import Mock, patch
 
 from pydantic import ValidationError
-from app import extract_features, PatientData
-
+from src.app import extract_features, PatientData
+sys.path.insert(0, 'src')
 
 class TestInterface:
 
@@ -24,7 +25,7 @@ class TestInterface:
             "in_scope": true
         }"""
 
-        with patch("app.ask_llm", return_value=llm_response):
+        with patch("src.app.ask_llm", return_value=llm_response):
             result = extract_features(mock_llm, sample_input)
 
         assert result["Age"] == 35
@@ -47,7 +48,7 @@ class TestInterface:
             "in_scope": true
         }"""
 
-        with patch("app.ask_llm", return_value=llm_response):
+        with patch("src.app.ask_llm", return_value=llm_response):
             result = extract_features(
                 mock_llm,
                 "I'm 40 and my glucose is 120."
@@ -77,7 +78,7 @@ class TestInterface:
             "in_scope": true
         }"""
 
-        with patch("app.ask_llm", return_value=llm_response):
+        with patch("src.app.ask_llm", return_value=llm_response):
             with pytest.raises(ValueError):
                 extract_features(
                     mock_llm,

@@ -1,7 +1,7 @@
 import mlflow
 import pickle
 from mlflow.artifacts import download_artifacts
-from utils import load_config
+from src.utils import load_config
 
 config = load_config()
 

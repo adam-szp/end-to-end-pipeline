@@ -7,9 +7,9 @@ import os
 import pickle
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from utils import load_config, load_hash
-from preprocess import validate_dataframe, clean_split_data, impute_scale_data, check_data_quality
-from evaluate import evaluate_model
+from src.utils import load_config, load_hash
+from src.preprocess import validate_dataframe, clean_split_data, impute_scale_data, check_data_quality
+from src.evaluate import evaluate_model
 
 config = load_config()
 

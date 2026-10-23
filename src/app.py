@@ -4,7 +4,7 @@ import streamlit as st
 from transformers import pipeline
 from pydantic import BaseModel, ConfigDict, field_validator, ValidationError
 
-from compare_experiments import load_best_artifacts
+from src.compare_experiments import load_best_artifacts
 
 
 features = [
@@ -159,7 +159,20 @@ def main():
     st.write(
         "Describe your measurements and I'll use a trained "
         "machine learning model to make a classification."
+        "You can include any of the following features:"
     )
+
+    with st.expander("View supported measurements"):
+        st.markdown("""
+        - **Pregnancies** — Number of times pregnant
+        - **Glucose** — Blood glucose level (mg/dL)
+        - **BloodPressure** — Diastolic blood pressure (mmHg)
+        - **SkinThickness** — Triceps skinfold thickness (mm)
+        - **Insulin** — 2-hour serum insulin (µU/mL)
+        - **BMI** — Body Mass Index
+        - **DiabetesPedigreeFunction** — Diabetes pedigree function score
+        - **Age** — Age in years
+        """)
 
     st.caption("Educational demonstration only. Not medical advice.")
 
