@@ -72,7 +72,7 @@ def train_model(config):
         mlflow.log_params(model.get_params())
         mlflow.log_param('features_dropped', str(to_drop))
 
-        if config["model"]["model_type"] == "RandomForestClassifier":
+        if config["model"]["model_type"] == 'RandomForestClassifier' or config["model"]["model_type"] == 'GradientBoostingClassifier':
             trusted_types = ["sklearn.tree._tree.Tree"]
         else:
             trusted_types = None
